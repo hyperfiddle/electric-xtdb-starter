@@ -1,0 +1,25 @@
+;; Start a REPL with XTDB_ENABLE_BYTEUTILS_SHA1=true env var
+{:paths ["src" "resources"]
+ :deps  {org.clojure/clojure       {:mvn/version "1.11.1"}
+         org.clojure/clojurescript {:mvn/version "1.11.4"}
+
+         com.xtdb/xtdb-core    {:mvn/version "1.19.0"}
+         com.xtdb/xtdb-rocksdb {:mvn/version "1.19.0"}
+
+         com.xtdb/xtdb-http-server {:mvn/version "1.19.0"}
+         com.xtdb/xtdb-lucene      {:mvn/version "1.19.0"}
+
+         org.clojure/tools.logging      {:mvn/version "1.2.4"}
+         ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
+         ch.qos.logback/logback-core    {:mvn/version "1.2.11"}
+         org.slf4j/slf4j-api            {:mvn/version "1.7.30"}
+
+         hyperfiddle/photon     {:local/root "../photon"}
+         thheller/shadow-cljs   {:mvn/version "2.18.0"}
+         com.google.guava/guava {:mvn/version "31.1-jre"} ; force guava to latest to fix shadow issue
+
+         }
+ :jvm-opts ["-Dclojure.tools.logging.factory=clojure.tools.logging.impl/slf4j-factory"
+            ;; the following option is required for JDK 16 and 17:
+            ;; https://github.com/xtdb/xtdb/issues/1462
+            "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED"]}
