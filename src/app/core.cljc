@@ -6,14 +6,14 @@
             [hyperfiddle.photon-dom :as dom]
             [missionary.core :as m]
             [clojure.pprint :refer [pprint]]
-            [clojure.string :as str])
+            [clojure.string])
   (:import (hyperfiddle.photon Pending))
   #?(:cljs (:require-macros app.core)))
 
 #?(:clj (assert (= "true" (System/getenv "XTDB_ENABLE_BYTEUTILS_SHA1"))))
 
 #?(:clj
-   (defn start-xtdb! [] ;; from XTDB’s getting started: xtdb-in-a-box
+   (defn start-xtdb! [] ; from XTDB’s getting started: xtdb-in-a-box
      (letfn [(kv-store [dir]
                {:kv-store {:xtdb/module 'xtdb.rocksdb/->kv-store
 	                         :db-dir      (io/file dir)
@@ -30,35 +30,24 @@
    (defn stop-xtdb! []
      (.close xtdb-node)))
 
-(defn query
-  "Return a task running a query in an threadpool optimized for blocking evaluation."
-  [db query & args]
-  #?(:clj (m/via m/blk
-                 (println "Querying:" query args)
-                 (try
-                   (apply xt/q db query args)
-                   (catch InterruptedException _
-                     (println "Query cancelled"))
-                   (catch Throwable err
-                     (println "Query error" err))))))
-
-(defn query-users
+(p/defn QueryUsers
   "Search for users in db.
   Will query on `xtdb-node` as of `tx-time` or at the latest node time if not
-  provided. Will filter by `needle` if non-nil. Return a flow that will produce
-  an empty list, then the query result, and terminate."
+  provided. Will filter by `needle` if non-nil. Will produce an empty list while
+  query is pending, then the actual query result."
   [xtdb-node tx-time needle]
-  #?(:clj
-     (let [db (if tx-time
-                (xt/db xtdb-node {::xt/tx-time tx-time})
-                (xt/db xtdb-node))]
-       (->> (m/ap (m/? (query db '{:find [(pull e [:xt/id :user/name])]
-                                   :in [needle]
-                                   :where [[e :user/name name]
-                                           [(clojure.string/includes? name needle)]]}
-                              (or needle ""))))
-            (m/reductions {} ()) ; produce an empty list until query returns.
-            ))))
+  (let [db (if tx-time
+             (xt/db xtdb-node {::xt/tx-time tx-time})
+             (xt/db xtdb-node))]
+    (try
+      (p/wrap xt/q db '{:find [(pull e [:xt/id :user/name])]
+                        :in [needle]
+                        :where [[e :user/name name]
+                                [(clojure.string/includes? name needle)]]}
+              (or needle ""))
+      (catch Pending _
+        [] ; empty list of users while query is pending.
+        ))))
 
 (defn tx-flow
   "Return a discreet flow of events from XTDB's event bus."
@@ -68,39 +57,36 @@
                          ;; Called with no args when observe cancels
                          #(.close listener))))))
 
-(defn latest-tx
+(p/defn LatestTx
   "A continous flow of the latest transaction on this xtdb node.
   Starts with the result of `xt/latest-completed-tx`, then with successive
   transactions seen on the event bus."
   [xtdb-node]
-  #?(:clj
-     (->> (tx-flow xtdb-node)
-          (m/reductions {} (xt/latest-completed-tx xtdb-node)) ;; intial value is the latest known tx
-          (m/relieve {}))))
+  (->> (tx-flow xtdb-node)
+       (m/reductions {} (xt/latest-completed-tx xtdb-node)) ; intial value is the latest known tx
+       (m/relieve {})
+       (new) ; bring missionary flow into Photon land
+       ))
 
 (defn pprint-str [x] (with-out-str (pprint x)))
 
 (p/defn App []
   ~@ ;; server
-  (let [tx (new (latest-tx xtdb-node))]
+  (let [tx (LatestTx. xtdb-node)]
     ~@ ;; client
     (dom/div
      (dom/h1 (dom/text "Hello XTDB"))
      (dom/p (dom/text "Latest tx: "))
      (dom/pre (dom/text (pprint-str tx)))
      (dom/p (dom/text "All users:"))
-     (let [needle (dom/input (dom/attribute "placeholder" "Filter…")
-                             (->> (dom/events dom/parent "input")
-                                  (m/eduction (map dom/target-value))
-                                  (m/reductions {} "") ; initial value
-                                  (m/relieve {}) ; we only care about the latest value of input
-                                  (new)))]
+     (let [needle (dom/input {:placeholder "Filter…"}
+                             (dom/events "input" (map (dom/oget :target :value)) ""))]
        (dom/table
         (dom/thead
          (dom/th (dom/text ":xt/id"))
          (dom/th (dom/text ":user/name")))
         (dom/tbody
-         (dom/for [[user] ~@(new (query-users xtdb-node (::xt/tx-time tx) needle))]
+         (dom/for [[user] ~@ (QueryUsers. xtdb-node (::xt/tx-time tx) needle)]
            (dom/tr
             (dom/td (dom/text (:xt/id user)))
             (dom/td (dom/text (:user/name user)))))))))))
