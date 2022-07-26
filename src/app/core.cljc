@@ -4,6 +4,7 @@
                :cljs [xtdb.api :as-alias xt])
             [hyperfiddle.photon :as p]
             [hyperfiddle.photon-dom :as dom]
+            [hyperfiddle.photon-ui :as ui]
             [missionary.core :as m]
             [clojure.pprint :refer [pprint]]
             [clojure.string])
@@ -79,27 +80,25 @@
      (dom/p (dom/text "Latest tx: "))
      (dom/pre (dom/text (pprint-str tx)))
      (dom/p (dom/text "All users:"))
-     (let [needle (dom/input {:placeholder "Filter…"}
-                             (dom/events "input" (map (dom/oget :target :value)) ""))]
+     (let [needle (::ui/value (ui/input {::dom/placeholder "Filter…"}))]
        (dom/table
         (dom/thead
          (dom/th (dom/text ":xt/id"))
          (dom/th (dom/text ":user/name")))
         (dom/tbody
-         (dom/for [[user] ~@ (QueryUsers. xtdb-node (::xt/tx-time tx) needle)]
+         (p/for [[user] ~@ (QueryUsers. xtdb-node (::xt/tx-time tx) needle)]
            (dom/tr
             (dom/td (dom/text (:xt/id user)))
             (dom/td (dom/text (:user/name user)))))))))))
 
 (def app
   #?(:cljs
-     (p/client
-      (p/main
-       (binding [dom/parent (dom/by-id "root")] ; render App under #root
+     (p/boot
+       (binding [dom/node (dom/by-id "root")] ; render App under #root
          (try
            (App.)
            (catch Pending _
-             (prn "App is in pending state"))))))))
+             (prn "App is in pending state")))))))
 
 (comment
   ;; Evaluate these at the REPL
