@@ -72,24 +72,24 @@
 (defn pprint-str [x] (with-out-str (pprint x)))
 
 (p/defn App []
-  ~@ ;; server
-  (let [tx (LatestTx. xtdb-node)]
-    ~@ ;; client
-    (dom/div
-     (dom/h1 (dom/text "Hello XTDB"))
-     (dom/p (dom/text "Latest tx: "))
-     (dom/pre (dom/text (pprint-str tx)))
-     (dom/p (dom/text "All users:"))
-     (let [needle (::ui/value (ui/input {::dom/placeholder "Filter…"}))]
-       (dom/table
-        (dom/thead
-         (dom/th (dom/text ":xt/id"))
-         (dom/th (dom/text ":user/name")))
-        (dom/tbody
-         (p/for [[user] ~@ (QueryUsers. xtdb-node (::xt/tx-time tx) needle)]
-           (dom/tr
-            (dom/td (dom/text (:xt/id user)))
-            (dom/td (dom/text (:user/name user)))))))))))
+  (p/server
+    (let [tx (LatestTx. xtdb-node)]
+      (p/client
+        (dom/div
+          (dom/h1 (dom/text "Hello XTDB"))
+          (dom/p (dom/text "Latest tx: "))
+          (dom/pre (dom/text (pprint-str tx)))
+          (dom/p (dom/text "All users:"))
+          (let [needle (::ui/value (ui/input {::dom/placeholder "Filter…"}))]
+            (dom/table
+              (dom/thead
+                (dom/th (dom/text ":xt/id"))
+                (dom/th (dom/text ":user/name")))
+              (dom/tbody
+                (p/for [[user] (p/server (QueryUsers. xtdb-node (::xt/tx-time tx) needle))]
+                  (dom/tr
+                    (dom/td (dom/text (:xt/id user)))
+                    (dom/td (dom/text (:user/name user)))))))))))))
 
 (def app
   #?(:cljs
