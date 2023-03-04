@@ -5,18 +5,12 @@
   (:require [missionary.core :as m]
             [xtdb.api :as xt]))
 
-(defn query-users [db search]
-  (->> (xt/q db '{:find [(pull e [:xt/id :user/name])]
-                  :in [search]
-                  :where [[e :user/name name]
-                          [(clojure.string/includes? name search)]]}
-         (or search ""))
-    (map first)
-    (sort-by :user/name)))
-
-(comment (query-users user/db ""))
-
-(defn db [!xtdb] (xt/db !xtdb)) ; wrap so electric app doesn't depend directly on xtdb.api
+; wrap so electric app doesn't depend directly on xtdb.api, fixme
+(defn db [!xtdb] (xt/db !xtdb))
+(defn entity [db eid] (xt/entity db eid))
+(defn submit-tx
+  ([node tx-ops] (xt/submit-tx node tx-ops))
+  ([node tx-ops opts] (xt/submit-tx node tx-ops opts)))
 
 (defn latest-db>
   "return continuous flow of XTDB tx notifications, but only works for XTDB
@@ -31,19 +25,14 @@
                 (if tx-time (xt/db !xtdb {::xt/tx-time tx-time})
                             (xt/db !xtdb))))))
 
-(comment
-  ;; Evaluate these at the REPL
-  ;; See the UI react to the new db state.
-  (xt/submit-tx user/!xtdb [[::xt/put {:xt/id "9" :task/description "buy milk" :task/status :active}]])
-  (xt/submit-tx user/!xtdb [[::xt/put {:xt/id "10" :task/description "feed baby" :task/status :active}]])
-  (xt/submit-tx user/!xtdb [[::xt/put {:xt/id "11" :task/description "exercise" :task/status :active}]])
-  )
-
 (defn todo-records [db]
-  (->> (xt/q db '{:find [(pull ?e [:db/id :task/description])]
+  (->> (xt/q db '{:find [(pull ?e [:xt/id :task/description])]
                   :where [[?e :task/status]]})
     (map first)
-    (sort-by :task/description)))
+    (sort-by :task/description)
+    vec))
+
+(comment (todo-records user/db))
 
 (defn todo-count [db]
   (count (xt/q db '{:find [?e] :in [$ ?status]

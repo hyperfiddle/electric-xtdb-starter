@@ -1,34 +1,17 @@
-# photon-xtdb-starter
+# electric-xtdb-starter
 
-An example [Photon](https://github.com/hyperfiddle/photon) app using XTDB. Adapted from [xtdb-in-a-box](https://github.com/xtdb/xtdb-in-a-box)
+* Adapted from [xtdb-in-a-box](https://github.com/xtdb/xtdb-in-a-box)
+* Requires env var `XTDB_ENABLE_BYTEUTILS_SHA1=true`
 
-## Setup
-
-- clone this repository
-- clone photon repository next to this one 
-
-## Running
-
-### From command line
-
-```shell
-XTDB_ENABLE_BYTEUTILS_SHA1=true clj
 ```
-Will:
-- start an nREPL
-- compile cljs
-- serve the app at http://localhost:8080
+$ XTDB_ENABLE_BYTEUTILS_SHA1=true clj -A:dev -X user/main
 
-### From your editor (jack-in) 
+Starting Electric compiler and server...
+shadow-cljs - server version: 2.20.1 running at http://localhost:9630
+shadow-cljs - nREPL server started on port 9001
+[:app] Configuring build.
+[:app] Compiling ...
+[:app] Build completed. (224 files, 0 compiled, 0 warnings, 1.93s)
 
-Make sure you set the `XTDB_ENABLE_BYTEUTILS_SHA1` environnement variable to `true` before jacking-in.
-
-## Loading data
-
-In ns `app.core`, evaluate these at the REPL:
-
-```clojure
-(xt/submit-tx xtdb-node [[::xt/put {:xt/id "9" :user/name "alice"}]])
-(xt/submit-tx xtdb-node [[::xt/put {:xt/id "10" :user/name "bob"}]])
-(xt/submit-tx xtdb-node [[::xt/put {:xt/id "11" :user/name "charlie"}]])
+👉 App server available at http://0.0.0.0:8080
 ```
