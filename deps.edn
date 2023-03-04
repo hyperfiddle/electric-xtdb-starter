@@ -7,9 +7,9 @@
   com.hyperfiddle/electric {:mvn/version "v2-alpha-123-ga7fa624f"}
   com.hyperfiddle/rcf {:mvn/version "20220926-202227"}
   com.xtdb/xtdb-core {:mvn/version "1.23.0"}
-  com.xtdb/xtdb-http-client {:mvn/version "1.23.0"}
-  com.xtdb/xtdb-http-server {:mvn/version "1.23.0"}
-  com.xtdb/xtdb-lucene {:mvn/version "1.23.0"}
+  ;com.xtdb/xtdb-http-client {:mvn/version "1.23.0"}
+  ;com.xtdb/xtdb-http-server {:mvn/version "1.23.0"}
+  ;com.xtdb/xtdb-lucene {:mvn/version "1.23.0"}
   com.xtdb/xtdb-rocksdb {:mvn/version "1.23.0"}
   info.sunng/ring-jetty9-adapter
   {:mvn/version "0.14.3" ; (Jetty 9) is Java 8 compatible;
