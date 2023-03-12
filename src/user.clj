@@ -18,7 +18,7 @@
        :xtdb/index-store (kv-store "data/dev/index-store")})))
 
 (def electric-server-config
-  {:host "0.0.0.0", :port 8080, :resources-path "resources/public"})
+  {:host "0.0.0.0", :port 8080, :resources-path "public"})
 
 (def !xtdb)
 (def !electric-server)

@@ -1,15 +1,16 @@
 (ns app.todo-list
-  (:require #?(:clj [app.db :as db])
+  (:require #?(:clj [app.xtdb-contrib :as db])
             [hyperfiddle.electric :as e]
             [hyperfiddle.electric-dom2 :as dom]
-            [hyperfiddle.electric-ui4 :as ui]))
+            [hyperfiddle.electric-ui4 :as ui]
+            [xtdb.api #?(:clj :as :cljs :as-alias) xt]))
 
 (e/def !xtdb)
 (e/def db) ; injected database ref; Electric defs are always dynamic
 
 (e/defn TodoItem [id]
   (e/server
-    (let [e (db/entity db id)
+    (let [e (xt/entity db id)
           status (:task/status e)]
       (e/client
         (dom/div
@@ -18,7 +19,7 @@
             (e/fn [v]
               (e/server
                 (e/discard
-                  (db/submit-tx !xtdb [[:xtdb.api/put
+                  (xt/submit-tx !xtdb [[:xtdb.api/put
                                         {:xt/id id
                                          :task/description (:task/description e) ; repeat
                                          :task/status (if v :done :active)}]]))))
@@ -39,10 +40,28 @@
     (InputSubmit. (e/fn [v]
                     (e/server
                       (e/discard
-                        (db/submit-tx !xtdb [[:xtdb.api/put
+                        (xt/submit-tx !xtdb [[:xtdb.api/put
                                               {:xt/id (random-uuid)
                                                :task/description v
                                                :task/status :active}]])))))))
+
+#?(:clj
+   (defn todo-records [db]
+     (->> (xt/q db '{:find [(pull ?e [:xt/id :task/description])]
+                     :where [[?e :task/status]]})
+       (map first)
+       (sort-by :task/description)
+       vec)))
+
+(comment (todo-records user/db))
+
+#?(:clj
+   (defn todo-count [db]
+     (count (xt/q db '{:find [?e] :in [$ ?status]
+                       :where [[?e :task/status ?status]]}
+              :active))))
+
+(comment (todo-count user/db))
 
 (e/defn Todo-list []
   (e/server
@@ -56,9 +75,9 @@
           (TodoCreate.)
           (dom/div {:class "todo-items"}
             (e/server
-              (e/for-by :xt/id [{:keys [xt/id]} (e/offload #(db/todo-records db))]
+              (e/for-by :xt/id [{:keys [xt/id]} (e/offload #(todo-records db))]
                 (TodoItem. id))))
           (dom/p (dom/props {:class "counter"})
             (dom/span (dom/props {:class "count"})
-              (dom/text (e/server (e/offload #(db/todo-count db)))))
+              (dom/text (e/server (e/offload #(todo-count db)))))
             (dom/text " items left")))))))
