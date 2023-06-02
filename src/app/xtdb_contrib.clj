@@ -11,6 +11,6 @@
                       #(.close listener))))
     (m/reductions {} (xt/latest-completed-tx !xtdb)) ; initial value is the latest known tx, possibly nil
     (m/relieve {})
-    (m/latest (fn [{:keys [:xt/tx-time] :as ?tx}]
+    (m/latest (fn [{:keys [:xtdb.api/tx-time] :as ?tx}]
                 (if tx-time (xt/db !xtdb {::xt/tx-time tx-time})
                             (xt/db !xtdb))))))
