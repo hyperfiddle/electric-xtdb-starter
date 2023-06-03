@@ -15,3 +15,12 @@ shadow-cljs - nREPL server started on port 9001
 
 👉 App server available at http://0.0.0.0:8080
 ```
+
+## Using Calva?
+
+If you are using Calva you can start the app like this instead:
+
+0. Open the project in VS Code
+1. Issue the command **Calva: Start a Project REPL and Connect (a.k.a Jack-in)
+
+When "👉 App server available at http://0.0.0.0:8080" is printed in the Calva output/REPL window, you can control/cmd-click it and Calva will be connected both to the server and the client parts of the app.

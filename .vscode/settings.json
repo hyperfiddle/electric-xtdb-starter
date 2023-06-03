@@ -1,0 +1,18 @@
+{
+    "calva.replConnectSequences": [
+        {
+            "name": "Electric XTDB Starter App",
+            "projectType": "shadow-cljs",
+            "cljsType": "shadow-cljs",
+            "jackInEnv": {"XTDB_ENABLE_BYTEUTILS_SHA1": "true"},
+            "projectRootPath": ["."],
+            "autoSelectForJackIn": true,
+            "autoSelectForConnect": true,
+            "afterCLJReplJackInCode": "(require '[user]) (user/main)",
+            "menuSelections": {
+                "cljsLaunchBuilds": ["dev"],
+                "cljsDefaultBuild": "dev"
+            }
+        }
+    ]
+}

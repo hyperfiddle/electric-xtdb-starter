@@ -12,7 +12,8 @@ clj/**/pom.xml.asc
 .lein-failures
 .nrepl-port
 .cpcache/
-.lsp/
+.lsp/.cache
+.clj-kondo/.cache
 clj/data/
 clj/target/
 java/data/
@@ -20,7 +21,6 @@ java/target/
 java/.classpath
 java/.project
 .settings/
-.vscode/
 *.~undo-tree~
 .DS_Store
 /data/
