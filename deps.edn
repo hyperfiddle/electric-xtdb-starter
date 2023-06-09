@@ -3,7 +3,7 @@
  :deps
  {ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
   ;com.google.guava/guava {:mvn/version "31.1-jre"} ; force guava to latest to fix shadow issue
-  com.hyperfiddle/electric {:mvn/version "v2-alpha-263-g89da9d11"}
+  com.hyperfiddle/electric {:mvn/version "v2-alpha-338-geec2f3df"}
   com.hyperfiddle/rcf {:mvn/version "20220926-202227"}
   com.xtdb/xtdb-core {:mvn/version "1.23.0"}
   com.xtdb/xtdb-rocksdb {:mvn/version "1.23.0"}
