@@ -19,10 +19,11 @@
             (e/fn [v]
               (e/server
                 (e/discard
-                  (xt/submit-tx !xtdb [[:xtdb.api/put
-                                        {:xt/id id
-                                         :task/description (:task/description e) ; repeat
-                                         :task/status (if v :done :active)}]]))))
+                  (e/offload
+                    #(xt/submit-tx !xtdb [[:xtdb.api/put
+                                           {:xt/id id
+                                            :task/description (:task/description e) ; repeat
+                                            :task/status (if v :done :active)}]])))))
             (dom/props {:id id}))
           (dom/label (dom/props {:for id}) (dom/text (e/server (:task/description e)))))))))
 
@@ -40,10 +41,11 @@
     (InputSubmit. (e/fn [v]
                     (e/server
                       (e/discard
-                        (xt/submit-tx !xtdb [[:xtdb.api/put
-                                              {:xt/id (random-uuid)
-                                               :task/description v
-                                               :task/status :active}]])))))))
+                        (e/offload
+                          #(xt/submit-tx !xtdb [[:xtdb.api/put
+                                                 {:xt/id (random-uuid)
+                                                  :task/description v
+                                                  :task/status :active}]]))))))))
 
 #?(:clj
    (defn todo-records [db]
