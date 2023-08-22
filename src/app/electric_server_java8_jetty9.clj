@@ -1,6 +1,6 @@
 ;; Start from this example if you need Java 8 compat.
 ;; See `deps.edn`
-(ns electric-server-java8-jetty9
+(ns app.electric-server-java8-jetty9
   (:require [clojure.java.io :as io]
             [hyperfiddle.electric-jetty-adapter :as adapter]
             [clojure.tools.logging :as log]
